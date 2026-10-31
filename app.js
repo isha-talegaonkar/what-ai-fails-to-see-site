@@ -142,6 +142,9 @@ function setView(view) {
 function setIndex(index) {
   const records = state.data.records;
   state.index = (index + records.length) % records.length;
+  const url = new URL(location.href);
+  url.searchParams.set("image", records[state.index].image);
+  history.replaceState(null, "", url);
   renderRecord();
 }
 
@@ -155,6 +158,9 @@ function renderRecord() {
     const caption = record.captions.find(item => !item.is_rejected && !item.is_precanned);
     img.alt = caption ? `VizWiz source photograph ${record.image}. Human caption: ${caption.caption}` : `VizWiz source photograph ${record.image}. No usable human caption is available.`;
     img.loading = "lazy";
+    img.addEventListener("error", () => {
+      photo.replaceChildren(node("p", "empty-state", "The photograph could not be loaded from its source."));
+    });
     photo.append(img);
   } else photo.append(node("p", "empty-state", "Photograph not downloaded yet."));
 
@@ -165,6 +171,10 @@ function renderRecord() {
   archive.href = "https://vizwiz.cs.colorado.edu/VizWiz_final/images/val.zip";
   archive.target = "_blank"; archive.rel = "noopener noreferrer";
   source.append(archive);
+  const sourcePhoto = node("a", "archive-link", "View photograph at VizWiz ↗");
+  sourcePhoto.href = record.image_url || `https://vizwiz.cs.colorado.edu/VizWiz_visualization_img/${record.image}`;
+  sourcePhoto.target = "_blank"; sourcePhoto.rel = "noopener noreferrer";
+  source.append(sourcePhoto);
   const stats = node("div", "source-stats");
   stats.append(node("span", "", record.answerable ? "Labeled answerable" : "Labeled unanswerable"));
   stats.append(node("span", "", `Blur ${record.quality_votes.BLR}/5`));
@@ -290,6 +300,9 @@ async function start() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     state.data = await response.json();
     if (!state.data.records?.length) throw new Error("No selected records");
+    const requestedImage = new URLSearchParams(location.search).get("image");
+    const requestedIndex = state.data.records.findIndex(record => record.image === requestedImage);
+    if (requestedIndex >= 0) state.index = requestedIndex;
     try {
       const saved = localStorage.getItem(AUDIT_KEY);
       if (saved) state.audits = validateAuditFile(JSON.parse(saved), state.data);
@@ -303,6 +316,13 @@ async function start() {
     setView(["voices", "breaks", "next"].includes(hash) ? hash : "voices");
     byId("previous").addEventListener("click", () => setIndex(state.index - 1));
     byId("next-record").addEventListener("click", () => setIndex(state.index + 1));
+    document.addEventListener("keydown", event => {
+      if (state.view !== "voices" || !event.altKey || event.ctrlKey || event.metaKey ||
+          !["ArrowLeft", "ArrowRight"].includes(event.key) ||
+          event.target.closest("input, textarea, select, [contenteditable]")) return;
+      event.preventDefault();
+      setIndex(state.index + (event.key === "ArrowRight" ? 1 : -1));
+    });
     byId("record-search").addEventListener("input", event => { state.search = event.target.value; renderSearch(); });
     for (const tab of document.querySelectorAll(".view-tab")) tab.addEventListener("click", () => setView(tab.dataset.view));
   } catch (error) {
@@ -419,6 +439,22 @@ function renderFilterResults() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   target.append(download);
+  const csvButton = node("button", "download-data", `Download ${matches.length} matching cases (CSV)`);
+  csvButton.type = "button"; csvButton.disabled = matches.length === 0;
+  csvButton.addEventListener("click", () => {
+    const columns = ["image", "question", "answerable", "stakes", "blur_votes", "framing_votes",
+      "text_heavy", "closed_answer", "open_answer"];
+    const rows = matches.map(({ record }) => [record.image, record.question, record.answerable,
+      record.stakes, record.quality_votes.BLR, record.quality_votes.FRM, record.text_heavy,
+      record.models.codex?.answer?.text || "", record.models.ollama?.answer?.text || ""]);
+    const cell = value => `"${String(value ?? "").replaceAll('"', '""')}"`;
+    const csv = [columns, ...rows].map(row => row.map(cell).join(",")).join("\r\n") + "\r\n";
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = node("a"); link.href = url; link.download = "what-ai-fails-to-see-filtered.csv";
+    document.body.append(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+  target.append(csvButton);
   if (state.filters.textHeavy && state.data.summary.text_heavy_reviewed === 0) {
     target.append(node("p", "filter-note", "No images have been scored for text density yet. The VizWiz ‘text detected’ flag is a separate crowd label and is not used as a text-heavy label."));
   } else {
