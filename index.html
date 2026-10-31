@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore the gap between generic AI image descriptions and the questions blind people actually asked.">
+  <title>What Does AI Fail to See?</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">◉</span><span>WHAT DOES AI FAIL TO SEE?</span></div>
+    <span id="mode-badge" class="private-badge">Public work in progress</span>
+  </header>
+  <main id="main">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">A VISUAL QUESTION ANSWERING EXPLORER</p>
+      <h1 id="page-title">A description can sound right.<br><em>Was it useful?</em></h1>
+      <p class="intro-copy">These photographs came with real questions from blind people. Compare what people said about each image with what two vision models described and how they answered the question.</p>
+      <div id="summary" class="summary" aria-live="polite">Loading the 300-image sample…</div>
+    </section>
+    <nav class="view-nav" aria-label="Explorer views">
+      <button type="button" class="view-tab active" data-view="voices" aria-controls="voices" aria-current="page"><span>01</span> One image, three voices</button>
+      <button type="button" class="view-tab" data-view="breaks" aria-controls="breaks"><span>02</span> Where it breaks</button>
+      <button type="button" class="view-tab" data-view="next" aria-controls="next"><span>03</span> What I’d study next</button>
+    </nav>
+    <section id="voices" class="view" aria-labelledby="voices-title">
+      <div class="section-heading"><div><p class="eyebrow">VIEW 01 / THE ENCOUNTER</p><h2 id="voices-title">One image, three voices</h2></div><p>Source photo · human annotations · model outputs</p></div>
+      <div class="explorer-toolbar">
+        <label class="search-label" for="record-search">Find a question or filename <input id="record-search" type="search" placeholder="Search 300 questions…" autocomplete="off"></label>
+        <div class="record-controls"><button id="previous" type="button" aria-label="Previous image">←</button><span id="record-position" aria-live="polite">—</span><button id="next-record" type="button" aria-label="Next image">→</button></div>
+      </div>
+      <div id="search-results" class="search-results" hidden></div>
+      <div class="voices-grid">
+        <article class="panel photo-panel" aria-labelledby="photo-heading"><div class="panel-kicker">01 / THE SOURCE</div><h3 id="photo-heading">The photograph</h3><div id="photo-slot" class="photo-slot"></div><div id="source-meta"></div><div class="question-block"><span class="small-label">THE PERSON ASKED</span><blockquote id="question-text"></blockquote></div></article>
+        <article class="panel humans-panel" aria-labelledby="humans-heading"><div class="panel-kicker">02 / PEOPLE SAID</div><h3 id="humans-heading">Human annotations</h3><p class="panel-intro">Five captions describe the scene. Ten crowd answers respond to the actual question.</p><div id="human-captions"></div><div id="human-answers"></div></article>
+        <article class="panel models-panel" aria-labelledby="models-heading"><div class="panel-kicker">03 / THE MODELS</div><h3 id="models-heading">AI, two ways</h3><p class="panel-intro">Each model made two separate calls: one generic description, then one direct answer.</p><div id="model-output"></div></article>
+      </div>
+      <section id="audit-workspace" class="audit-workspace" aria-label="Analyst review"></section>
+    </section>
+    <section id="breaks" class="view" aria-labelledby="breaks-title" hidden>
+      <div class="section-heading"><div><p class="eyebrow">VIEW 02 / THE CONDITIONS</p><h2 id="breaks-title">Where it breaks</h2></div><p>Explore conditions in this selected sample</p></div>
+      <div id="overview" class="overview"></div>
+      <div id="filter-app"></div>
+    </section>
+    <section id="next" class="view" aria-labelledby="next-title" hidden>
+      <div class="section-heading"><div><p class="eyebrow">VIEW 03 / THE QUESTIONS</p><h2 id="next-title">What I’d study next</h2></div><p>A research agenda, not a finding</p></div>
+      <div id="editorial"></div>
+    </section>
+  </main>
+  <footer class="site-footer"><p>Images and annotations: <a href="https://vizwiz.org/tasks-and-datasets/vqa/" target="_blank" rel="noopener noreferrer">VizWiz-VQA</a>, <a href="https://vizwiz.org/tasks-and-datasets/image-captioning/" target="_blank" rel="noopener noreferrer">VizWiz-Captions</a>, and <a href="https://vizwiz.org/tasks-and-datasets/image-quality-issues/" target="_blank" rel="noopener noreferrer">VizWiz Quality Issues</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Selection, joins, labels, and model outputs: this project.</p><p id="mode-note">Public work in progress · photographs load from VizWiz.</p></footer>
+</body>
+</html>
